@@ -38,6 +38,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'oauth2_provider',
+    'corsheaders',
     'manageApp'
 )
 
@@ -50,9 +52,13 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'oauth2_provider.middleware.OAuth2TokenMiddleware',
 )
 
+
 ROOT_URLCONF = 'collageapp.urls'
+CORS_ORIGIN_ALLOW_ALL = True
 
 TEMPLATES = [
     {
@@ -80,8 +86,8 @@ DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'college_app',
-        'USER': 'admin',
-        'PASSWORD': 'admin',
+        'USER': 'root',
+        'PASSWORD': '',
         'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
     }
