@@ -11,4 +11,6 @@ urlpatterns = [
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'^api/hello', views.ApiEndpoint.as_view()),
     url(r'^secret$', views.secret_page, name='secret'),
+    url(r'^index$', views.index, name='index'),
+    url(r'^home$', views.home, name='home'),
 ]

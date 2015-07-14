@@ -7,8 +7,8 @@ urlpatterns = [
     # url(r'^blog/', include('blog.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
-     url(r'^accounts/', include('allauth.urls')),
- url(r'^manageApp/', include('manageApp.urls')),
+    url(r'^accounts/', include('allauth.urls')),
+    url(r'^manageApp/', include('manageApp.urls')),
     #Admin Urls
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
