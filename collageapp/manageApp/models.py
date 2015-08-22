@@ -1,18 +1,29 @@
+import hashlib
 from django.db import models
 
-class Users(models.Model):
-    oAuthID = models.CharField(max_length=500)
+def _createHash(self, *args, **kwargs):
+    return hashlib.md5(self.password)
+
+class collegeAppUser(models.Model):
     username = models.CharField(max_length=100)
-    password = models.CharField(max_length=50)
+    password = models.CharField(max_length=500, default=_createHash)
 
 class MainCategories(models.Model):
     category_name = models.CharField(max_length=100)
 
 class College(models.Model):
-    category_id = models.ForeignKey(MainCategories)
     college_name = models.CharField(max_length=250)
     college_url = models.CharField(max_length=500)
 
 class UserCollegeLink(models.Model):
-    user_id = models.ForeignKey(Users)
+    user = models.ForeignKey(collegeAppUser)
+    college = models.ForeignKey(College)
+
+class UserCategoryLink(models.Model):
+    user = models.ForeignKey(collegeAppUser)
+    cat = models.ForeignKey(MainCategories)
+
+class CollegeCategoryLink(models.Model):
     college_id = models.ForeignKey(College)
+    category_id = models.ForeignKey(MainCategories)
+

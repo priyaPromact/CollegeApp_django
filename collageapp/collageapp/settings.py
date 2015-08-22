@@ -46,7 +46,7 @@ INSTALLED_APPS = (
     'allauth.socialaccount.providers.facebook',
     'allauth.socialaccount.providers.google',
     'django.contrib.admindocs',
-
+    'rest_framework',
 )
 
 SITE_ID = 1
