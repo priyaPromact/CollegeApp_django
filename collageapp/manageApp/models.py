@@ -1,12 +1,14 @@
 import hashlib
 from django.db import models
 
-def _createHash(self, *args, **kwargs):
-    return hashlib.md5(self.password)
 
 class collegeAppUser(models.Model):
     username = models.CharField(max_length=100)
-    password = models.CharField(max_length=500, default=_createHash)
+    password = models.CharField(max_length=500)
+
+    def save(self, *args, **kwargs):
+        self.password = hashlib.md5(self.password).hexdigest()
+        super(collegeAppUser, self).save(*args, **kwargs)
 
 class MainCategories(models.Model):
     category_name = models.CharField(max_length=100)
