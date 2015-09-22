@@ -1,0 +1,13 @@
+pip install –U django==1.8
+pip install beautifulsoup4
+pip install django-allauth==0.21.0
+pip install django-braces
+pip install django-cors-headers
+pip install django-filter
+pip install django-oauth-toolkit
+pip install django-oauth2-provider
+pip install django-openid-auth
+pip install djangorestframework
+pip install django-google-api-python-client
+pip install mysqlclient
+pip install python-social-auth

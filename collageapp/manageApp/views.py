@@ -27,20 +27,20 @@ class Register(viewsets.ModelViewSet):
     queryset = collegeAppUser.objects.all()
     serializer_class = collegeAppUserSerializer
 
-    def post(self, request, format=None):
+    def create(self, request):
         print request.POST
         serializer = collegeAppUserSerializer(data=request.POST)
         print serializer
         if serializer.is_valid():
             serializer.save()
             return JSONResponse(serializer.data)
-        return JSONResponse(serializer.error)
+        return JSONResponse(serializer.errors)
 
 class getPreferenceByUser(viewsets.ViewSet):
     queryset = UserCategoryLink.objects.all()
     serializer_class = UserCategoryLinkSerializer
 
-    def post(self, request, format=None):
+    def create(self, request):
          print request.POST
          data = JSONParser().parse(request)
          queryset = UserCategoryLink.objects.filter(user_id=data.id)
@@ -60,14 +60,14 @@ class UserCategoryLink(viewsets.ModelViewSet):
     queryset = UserCategoryLink.objects.all()
     serializer_class = UserCategoryLinkSerializer
 
-    def post(self, request, format=None):
+    def create(self, request):
         print request.POST
         serializer = UserCategoryLinkSerializer(data=request.POST)
         print serializer
         if serializer.is_valid():
             serializer.save()
             return JSONResponse(serializer.data)
-        return JSONResponse(serializer.error)
+        return JSONResponse(serializer.errors)
 
 def index(request):
     template = loader.get_template('index.html')
@@ -104,6 +104,7 @@ def home(data):
 def register(request):
     if request.method == 'POST':
         data = JSONParser().parse(request)
+        print data
         serializer = collegeAppUserSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
