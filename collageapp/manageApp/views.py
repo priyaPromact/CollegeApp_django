@@ -7,11 +7,11 @@ from oauth2_provider.views import ProtectedResourceView
 from requests import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.views import APIView
-from manageApp.models import collegeAppUser, MainCategories, UserCategoryLink
+from manageApp.models import collegeAppUser, MainCategories, UserCategoryLink, CollegeCategoryLink, College, UserCollegeLink
 from django.template import RequestContext, loader
 from urllib import urlopen
 from bs4 import BeautifulSoup, NavigableString
-from manageApp.serializers import collegeAppUserSerializer, MainCategorySerializer, UserCategoryLinkSerializer
+from manageApp.serializers import collegeAppUserSerializer, MainCategorySerializer, UserCategoryLinkSerializer, CollegeCategoryLinkSerializer, CollegeSerializer, UserCollegeLinkSerializer
 from rest_framework.renderers import JSONRenderer
 from rest_framework import viewsets, generics
 
@@ -36,17 +36,6 @@ class Register(viewsets.ModelViewSet):
             return JSONResponse(serializer.data)
         return JSONResponse(serializer.errors)
 
-class getPreferenceByUser(viewsets.ViewSet):
-    queryset = UserCategoryLink.objects.all()
-    serializer_class = UserCategoryLinkSerializer
-
-    def create(self, request):
-         print request.POST
-         data = JSONParser().parse(request)
-         queryset = UserCategoryLink.objects.filter(user_id=data.id)
-         serializer = UserCategoryLinkSerializer(queryset, many=True)
-         return JSONResponse(serializer.data)
-
 class CategoryListing(viewsets.ModelViewSet):
     queryset = MainCategories.objects.all()
     serializer_class = MainCategorySerializer
@@ -56,18 +45,64 @@ class CategoryListing(viewsets.ModelViewSet):
         serializer = MainCategorySerializer(queryset, many=True)
         return JSONResponse(serializer.data)
 
-class UserCategoryLink(viewsets.ModelViewSet):
-    queryset = UserCategoryLink.objects.all()
+class UserCategoryLinkViewset(viewsets.ViewSet):
     serializer_class = UserCategoryLinkSerializer
 
     def create(self, request):
-        print request.POST
-        serializer = UserCategoryLinkSerializer(data=request.POST)
-        print serializer
-        if serializer.is_valid():
-            serializer.save()
-            return JSONResponse(serializer.data)
-        return JSONResponse(serializer.errors)
+        selectedCats = []
+        collegeList = []
+        data = JSONParser().parse(request)
+        for field in data:
+            selectedCats.append(field['cat'])
+            ucl = UserCategoryLink()
+            ucl.user = collegeAppUser.objects.get(id=field['user'])
+            ucl.cat = MainCategories.objects.get(id=field['cat'])
+            if not UserCategoryLink.objects.filter(user=field['user'], cat=field['cat']).exists():
+                ucl.save()
+
+        for cats in selectedCats:
+            queryset = CollegeCategoryLink.objects.filter(category_id=cats)
+            serializer = CollegeCategoryLinkSerializer(queryset, many=True)
+            for clg in serializer.data:
+                queryset_college = College.objects.filter(id=clg['college_id'])
+                serializer_college = CollegeSerializer(queryset_college, many=True)
+                collegeList.append(serializer_college.data)
+
+        return JSONResponse(collegeList)
+
+    def retrieve(self, request, id):
+         print id
+         queryset = UserCategoryLink.objects.filter(user_id=id)
+         serializer = UserCategoryLinkSerializer(queryset, many=True)
+         return JSONResponse(serializer.data)
+
+class UserCollegeLinkViewset(viewsets.ViewSet):
+     serializer_class = UserCollegeLinkSerializer
+
+     def create(self, request):
+        selectedCollege = []
+        collegeData = []
+        data = JSONParser().parse(request)
+        for field in data:
+            selectedCollege.append(field['college'])
+            ucl = UserCollegeLink()
+            ucl.user = collegeAppUser.objects.get(id=field['user'])
+            ucl.college = College.objects.get(id=field['college'])
+            if not UserCollegeLink.objects.filter(user=field['user'], college=field['college']).exists():
+                ucl.save()
+
+        for clg in selectedCollege:
+            queryset = College.objects.filter(id=clg)
+            serializer = CollegeSerializer(queryset, many=True)
+            collegeData.append(home(serializer.data[0]['college_url']))
+
+        return JSONResponse(collegeData)
+
+     def retrieve(self, request, id):
+         print id
+         queryset = UserCollegeLink.objects.filter(user_id=id)
+         serializer = UserCollegeLinkSerializer(queryset, many=True)
+         return JSONResponse(serializer.data)
 
 def index(request):
     template = loader.get_template('index.html')
@@ -97,7 +132,7 @@ def home(data):
                 head = link.string
             for h2 in link.find_all("h2"):
                 data.append(h2.string)
-    return JSONResponse(data)
+    return data
 
 
 @csrf_exempt
