@@ -1,3 +1,4 @@
+import hashlib
 import urllib
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
@@ -14,6 +15,7 @@ from bs4 import BeautifulSoup, NavigableString
 from manageApp.serializers import collegeAppUserSerializer, MainCategorySerializer, UserCategoryLinkSerializer, CollegeCategoryLinkSerializer, CollegeSerializer, UserCollegeLinkSerializer
 from rest_framework.renderers import JSONRenderer
 from rest_framework import viewsets, generics
+from django.views.generic import View
 
 
 class JSONResponse(HttpResponse):
@@ -104,6 +106,43 @@ class UserCollegeLinkViewset(viewsets.ViewSet):
          serializer = UserCollegeLinkSerializer(queryset, many=True)
          return JSONResponse(serializer.data)
 
+class Login(View):
+
+    def post(self,request):
+        collegeData = []
+        data = JSONParser().parse(request)
+        querysetUser = collegeAppUser.objects.filter(username=data['username'],password=hashlib.md5(data['password']).hexdigest())
+        serializerUser = collegeAppUserSerializer(querysetUser, many=True)
+        if serializerUser.data:
+           collegesQueryset = UserCollegeLink.objects.filter(user_id=serializerUser.data[0]['id'])
+           collegeSerializer = UserCollegeLinkSerializer(collegesQueryset,many=True)
+           print collegeSerializer.data[0]
+           for clg in collegeSerializer.data:
+                print collegeSerializer.data[0]
+                queryset = College.objects.filter(id=clg['college'])
+                serializer = CollegeSerializer(queryset, many=True)
+                collegeData.append({'user':serializerUser.data[0],'college':serializer.data[0],'news':home(serializer.data[0]['college_url'])})
+        return JSONResponse(collegeData)
+
+
+class LoginRefresh(View):
+
+    def post(self,request):
+        collegeData = []
+        data = JSONParser().parse(request)
+        querysetUser = collegeAppUser.objects.filter(id=data['id'])
+        serializerUser = collegeAppUserSerializer(querysetUser, many=True)
+        if serializerUser.data:
+           collegesQueryset = UserCollegeLink.objects.filter(user_id=serializerUser.data[0]['id'])
+           collegeSerializer = UserCollegeLinkSerializer(collegesQueryset,many=True)
+           print collegeSerializer.data[0]
+           for clg in collegeSerializer.data:
+                print collegeSerializer.data[0]
+                queryset = College.objects.filter(id=clg['college'])
+                serializer = CollegeSerializer(queryset, many=True)
+                collegeData.append({'user':serializerUser.data[0],'college':serializer.data[0],'news':home(serializer.data[0]['college_url'])})
+        return JSONResponse(collegeData)
+
 def index(request):
     template = loader.get_template('index.html')
     context = RequestContext(request)
@@ -120,6 +159,7 @@ def secret_page(request, *args, **kwargs):
 
 
 def home(data):
+    print data
     url = urllib.urlopen("http://www.svitvasad.ac.in/")
     soup = BeautifulSoup(url, "html.parser")
     data = []
@@ -134,6 +174,10 @@ def home(data):
                 data.append(h2.string)
     return data
 
+def login(request):
+    if request.method == 'POST':
+        data = JSONParser().parse(request)
+        print data
 
 @csrf_exempt
 def register(request):

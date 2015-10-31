@@ -2,6 +2,8 @@ from django.conf.urls import *
 from django.contrib import admin
 from manageApp import views
 from rest_framework import routers
+from manageApp.views import *
+from django.views.decorators.csrf import csrf_exempt
 
 user_cat_link_list = views.UserCategoryLinkViewset.as_view({
     'get': 'retrieve',
@@ -27,6 +29,8 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'^api/', include(router.urls)),
+    url(r'^api/login/$',csrf_exempt(Login.as_view())),
+    url(r'^api/refresh/$',csrf_exempt(LoginRefresh.as_view())),
     url(r'^secret$', views.secret_page, name='secret'),
     url(r'^index$', views.index, name='index'),
     url(r'^home$', views.home, name='home'),
